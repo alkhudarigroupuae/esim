@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#FF6B35">
+    <meta name="description" content="MPower Space - VoIP Calling App">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MPower Space">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <title>MPower Space - VoIP Calls</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23FF6B35' width='192' height='192' rx='40'/><path fill='white' d='M150 120c-8 0-15-2-22-6-20-12-38-30-50-50-4-7-6-14-6-22s2-15 6-22c12-20 30-38 50-50 7-4 14-6 22-6s15 2 22 6c20 12 38 30 50 50 4 7 6 14 6 22s-2 15-6 22c-12 20-30 38-50 50-7 4-14 6-22 6z'/></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23FF6B35' width='192' height='192' rx='40'/><path fill='white' d='M150 120c-8 0-15-2-22-6-20-12-38-30-50-50-4-7-6-14-6-22s2-15 6-22c12-20 30-38 50-50 7-4 14-6 22-6s15 2 22 6c20 12 38 30 50 50 4 7 6 14 6 22s-2 15-6 22c-12 20-30 38-50 50-7 4-14 6-22 6z'/></svg>">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0F0F23 0%, #1A1A2E 50%, #16213E 100%);
+            color: white;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Splash */
+        #splash {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, #0F0F23 0%, #1A1A2E 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s;
+        }
+        .splash-logo {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #FF6B35, #F7931E);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 20px 60px rgba(255,107,53,0.5);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .splash-text {
+            margin-top: 30px;
+            font-size: 36px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #FF6B35, #F7931E);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        /* Login */
+        #login, #app { display: none; height: 100%; }
+        
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            padding: 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #FF6B35, #F7931E);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo-text {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: blink 2s infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Inputs */
+        input {
+            width: 100%;
+            padding: 18px 20px;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            color: white;
+            font-size: 18px;
+            outline: none;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+            -webkit-appearance: none;
+        }
+        input:focus {
+            border-color: #FF6B35;
+            background: rgba(255,107,53,0.1);
+        }
+        input::placeholder { color: rgba(255,255,255,0.3); }
+        
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            -webkit-appearance: none;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #FF6B35, #F7931E);
+            color: white;
+            box-shadow: 0 10px 30px rgba(255,107,53,0.3);
+        }
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+        
+        /* Dial Pad */
+        .dial-display {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 30px 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .dial-number {
+            font-size: 28px;
+            font-weight: 300;
+            letter-spacing: 4px;
+            min-height: 40px;
+        }
+        .dial-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            flex: 1;
+            align-content: center;
+        }
+        .dial-btn {
+            aspect-ratio: 1;
+            background: rgba(255,255,255,0.05);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 26px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            -webkit-appearance: none;
+        }
+        .dial-btn:active {
+            background: rgba(255,107,53,0.4);
+            transform: scale(0.95);
+        }
+        .dial-btn span { font-size: 9px; opacity: 0.4; margin-top: 2px; }
+        
+        .call-btn {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            margin: 20px auto 0;
+            display: block;
+            box-shadow: 0 10px 30px rgba(34,197,94,0.4);
+            -webkit-appearance: none;
+        }
+        .call-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 5px;
+            margin-bottom: 15px;
+        }
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            -webkit-appearance: none;
+        }
+        .tab.active {
+            background: linear-gradient(135deg, #FF6B35, #F7931E);
+        }
+        
+        /* Contacts */
+        .contact {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            margin-bottom: 10px;
+        }
+        .contact-avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #FF6B35, #F7931E);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            font-size: 20px;
+        }
+        .contact-info { flex: 1; }
+        .contact-name { font-weight: 600; margin-bottom: 4px; font-size: 16px; }
+        .contact-number { font-size: 14px; opacity: 0.5; }
+        .contact-btn {
+            width: 50px;
+            height: 50px;
+            background: rgba(255,107,53,0.2);
+            border: none;
+            border-radius: 15px;
+            color: #FF6B35;
+            font-size: 20px;
+            cursor: pointer;
+            -webkit-appearance: none;
+        }
+        .contact-btn:active {
+            background: rgba(255,107,53,0.4);
+        }
+        
+        /* Call Screen */
+        #call-screen {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, #1A1A2E, #0F0F23);
+            z-index: 1000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .call-avatar {
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, #FF6B35, #F7931E);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(255,107,53,0.4);
+        }
+        .call-number { font-size: 28px; margin-bottom: 10px; }
+        .call-status { color: #22c55e; font-size: 18px; margin-bottom: 20px; }
+        .call-controls {
+            display: flex;
+            gap: 30px;
+            margin-top: 40px;
+        }
+        .call-control {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            -webkit-appearance: none;
+        }
+        .call-control.end {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 10px 30px rgba(239,68,68,0.4);
+        }
+        
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-weight: 600;
+            z-index: 10000;
+            animation: slideUp 0.3s;
+            font-size: 14px;
+        }
+        @keyframes slideUp {
+            from { transform: translateX(-50%) translateY(100px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+        
+        .otp-note {
+            background: rgba(255,107,53,0.1);
+            border: 1px solid rgba(255,107,53,0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #FF6B35;
+            text-align: center;
+        }
+        
+        .content-scroll {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Install banner */
+        #install-banner {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #FF6B35, #F7931E);
+            padding: 15px 20px;
+            text-align: center;
+            z-index: 1000;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.3);
+        }
+        #install-banner button {
+            background: white;
+            color: #FF6B35;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            margin-left: 15px;
+            cursor: pointer;
+            -webkit-appearance: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Splash -->
+    <div id="splash">
+        <div class="splash-logo">
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+        </div>
+        <div class="splash-text">MPower Space</div>
+    </div>
+
+    <!-- Login -->
+    <div id="login">
+        <div class="container">
+            <div style="text-align: center; padding: 40px 0; flex: 1; display: flex; flex-direction: column; justify-content: center;">
+                <div class="splash-logo" style="margin: 0 auto 30px;">
+                    <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                    </svg>
+                </div>
+                <h1 style="font-size: 32px; margin-bottom: 10px;">MPower Space</h1>
+                <p style="opacity: 0.6; margin-bottom: 30px;">Connect with anyone, anywhere</p>
+                
+                <input type="tel" id="phone" placeholder="+971 50 123 4567" autocomplete="tel">
+                <button class="btn btn-primary" onclick="sendOTP()">Send OTP</button>
+                
+                <div id="otp-section" style="display: none;">
+                    <input type="text" id="otp" placeholder="Enter OTP" maxlength="6" style="text-align: center; letter-spacing: 8px; font-size: 24px; margin-top: 15px;" autocomplete="one-time-code">
+                    <button class="btn btn-primary" onclick="verifyOTP()">Verify & Login</button>
+                </div>
+                
+                <div class="otp-note">
+                    📱 OTP shows at:<br><strong>http://76.13.184.134:5002</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- App -->
+    <div id="app">
+        <div class="container">
+            <div class="header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                        </svg>
+                    </div>
+                    <span class="logo-text">MPower</span>
+                </div>
+                <div class="status">
+                    <div class="status-dot"></div>
+                    <span id="user-number">+971...</span>
+                </div>
+            </div>
+            
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('keypad')">Keypad</div>
+                <div class="tab" onclick="switchTab('contacts')">Contacts</div>
+                <div class="tab" onclick="switchTab('history')">History</div>
+            </div>
+            
+            <!-- Keypad -->
+            <div id="keypad-tab" class="content-scroll">
+                <div class="dial-display">
+                    <div class="dial-number" id="dial-number"></div>
+                </div>
+                <div class="dial-pad">
+                    <button class="dial-btn" ontouchstart="dial('1')" onclick="dial('1')">1</button>
+                    <button class="dial-btn" ontouchstart="dial('2')" onclick="dial('2')">2<span>ABC</span></button>
+                    <button class="dial-btn" ontouchstart="dial('3')" onclick="dial('3')">3<span>DEF</span></button>
+                    <button class="dial-btn" ontouchstart="dial('4')" onclick="dial('4')">4<span>GHI</span></button>
+                    <button class="dial-btn" ontouchstart="dial('5')" onclick="dial('5')">5<span>JKL</span></button>
+                    <button class="dial-btn" ontouchstart="dial('6')" onclick="dial('6')">6<span>MNO</span></button>
+                    <button class="dial-btn" ontouchstart="dial('7')" onclick="dial('7')">7<span>PQRS</span></button>
+                    <button class="dial-btn" ontouchstart="dial('8')" onclick="dial('8')">8<span>TUV</span></button>
+                    <button class="dial-btn" ontouchstart="dial('9')" onclick="dial('9')">9<span>WXYZ</span></button>
+                    <button class="dial-btn" ontouchstart="dial('*')" onclick="dial('*')">*</button>
+                    <button class="dial-btn" ontouchstart="dial('0')" onclick="dial('0')">0<span>+</span></button>
+                    <button class="dial-btn" ontouchstart="dial('#')" onclick="dial('#')">#</button>
+                </div>
+                <button class="call-btn" ontouchstart="makeCall()" onclick="makeCall()">📞</button>
+            </div>
+            
+            <!-- Contacts -->
+            <div id="contacts-tab" style="display: none;" class="content-scroll">
+                <div class="contact">
+                    <div class="contact-avatar">A</div>
+                    <div class="contact-info">
+                        <div class="contact-name">Ahmed Al-Mansouri</div>
+                        <div class="contact-number">+447577563300</div>
+                    </div>
+                    <button class="contact-btn" ontouchstart="callContact('+447577563300')" onclick="callContact('+447577563300')">📞</button>
+                </div>
+                <div class="contact">
+                    <div class="contact-avatar">S</div>
+                    <div class="contact-info">
+                        <div class="contact-name">Sarah Hassan</div>
+                        <div class="contact-number">+971501234568</div>
+                    </div>
+                    <button class="contact-btn" ontouchstart="callContact('+971501234568')" onclick="callContact('+971501234568')">📞</button>
+                </div>
+                <div class="contact">
+                    <div class="contact-avatar">J</div>
+                    <div class="contact-info">
+                        <div class="contact-name">John Smith</div>
+                        <div class="contact-number">+971501234569</div>
+                    </div>
+                    <button class="contact-btn" ontouchstart="callContact('+971501234569')" onclick="callContact('+971501234569')">📞</button>
+                </div>
+            </div>
+            
+            <!-- History -->
+            <div id="history-tab" style="display: none;" class="content-scroll">
+                <div class="contact">
+                    <div class="contact-avatar" style="background: linear-gradient(135deg, #22c55e, #16a34a);">📤</div>
+                    <div class="contact-info">
+                        <div class="contact-name">Ahmed Al-Mansouri</div>
+                        <div class="contact-number">Yesterday, 10:30 AM • 5:23</div>
+                    </div>
+                </div>
+                <div class="contact">
+                    <div class="contact-avatar" style="background: linear-gradient(135deg, #ef4444, #dc2626);">📵</div>
+                    <div class="contact-info">
+                        <div class="contact-name">Sarah Hassan</div>
+                        <div class="contact-number">Yesterday, 3:45 PM • Missed</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call Screen -->
+    <div id="call-screen">
+        <div class="call-avatar" id="call-avatar">?</div>
+        <div class="call-number" id="call-number">+971 501 234567</div>
+        <div class="call-status" id="call-status">Connecting...</div>
+        <div class="call-controls">
+            <button class="call-control">🔇</button>
+            <button class="call-control end" onclick="endCall()">📞</button>
+            <button class="call-control">🔊</button>
+        </div>
+    </div>
+
+    <!-- Install Banner -->
+    <div id="install-banner">
+        <span>📲 Install MPower Space for better experience!</span>
+        <button onclick="installApp()">Install</button>
+    </div>
+
+    <script>
+        // PWA Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed:', err));
+        }
+        
+        // PWA Install prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('install-banner').style.display = 'block';
+        });
+        
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((result) => {
+                    deferredPrompt = null;
+                    document.getElementById('install-banner').style.display = 'none';
+                });
+            }
+        }
+        
+        // App state
+        let currentNumber = '';
+        let userPhone = '';
+        const API_BASE = 'http://76.13.184.134:5002';
+        
+        // Splash screen
+        setTimeout(() => {
+            document.getElementById('splash').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('splash').style.display = 'none';
+                document.getElementById('login').style.display = 'block';
+            }, 500);
+        }, 2000);
+        
+        // OTP Functions
+        function sendOTP() {
+            const phone = document.getElementById('phone').value.trim();
+            if (!phone) { showToast('Please enter phone number'); return; }
+            
+            const fullPhone = phone.startsWith('+') ? phone : '+' + phone;
+            
+            fetch(API_BASE + '/send-otp', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'phone=' + encodeURIComponent(fullPhone)
+            })
+            .then(r => r.text())
+            .then(html => {
+                document.getElementById('otp-section').style.display = 'block';
+                showToast('OTP sent! Check server for code.');
+            })
+            .catch(e => showToast('Error: ' + e.message));
+        }
+        
+        function verifyOTP() {
+            const phone = document.getElementById('phone').value.trim();
+            const otp = document.getElementById('otp').value.trim();
+            const fullPhone = phone.startsWith('+') ? phone : '+' + phone;
+            
+            fetch(API_BASE + '/verify-otp', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'phone=' + encodeURIComponent(fullPhone) + '&otp=' + otp
+            })
+            .then(r => r.text())
+            .then(html => {
+                if (html.includes('Verified') || html.includes('Account')) {
+                    userPhone = fullPhone;
+                    document.getElementById('login').style.display = 'none';
+                    document.getElementById('app').style.display = 'block';
+                    document.getElementById('user-number').textContent = userPhone;
+                    showToast('Logged in successfully!');
+                } else {
+                    showToast('Invalid OTP');
+                }
+            })
+            .catch(e => showToast('Error: ' + e.message));
+        }
+        
+        // Dial functions
+        function dial(key) {
+            if (key === '0' && currentNumber === '') {
+                currentNumber = '+';
+            } else if (key !== '0' || currentNumber !== '+') {
+                currentNumber += key;
+            }
+            document.getElementById('dial-number').textContent = currentNumber;
+        }
+        
+        function makeCall() {
+            if (!currentNumber) return;
+            showCallScreen(currentNumber);
+        }
+        
+        function callContact(number) {
+            showCallScreen(number);
+        }
+        
+        function showCallScreen(number) {
+            document.getElementById('call-screen').style.display = 'flex';
+            document.getElementById('call-number').textContent = number;
+            document.getElementById('call-avatar').textContent = number.charAt(0).toUpperCase();
+            document.getElementById('call-status').textContent = 'Connecting...';
+            
+            setTimeout(() => {
+                document.getElementById('call-status').textContent = 'Connected • 00:00';
+            }, 2000);
+        }
+        
+        function endCall() {
+            document.getElementById('call-screen').style.display = 'none';
+        }
+        
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.getElementById('keypad-tab').style.display = 'none';
+            document.getElementById('contacts-tab').style.display = 'none';
+            document.getElementById('history-tab').style.display = 'none';
+            
+            document.getElementById(tab + '-tab').style.display = 'block';
+        }
+        
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+        
+        // Handle URL params for PWA shortcuts
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('action') === 'call') {
+            setTimeout(() => {
+                document.getElementById('splash').style.display = 'none';
+                document.getElementById('login').style.display = 'block';
+            }, 2100);
+        }
+    </script>
+</body>
+</html>
