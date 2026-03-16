@@ -403,7 +403,7 @@
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
             </svg>
         </div>
-        <div class="splash-text">MPower Space</div>
+        <div class="splash-text">ESIM</div>
     </div>
 
     <!-- Login -->
@@ -415,10 +415,10 @@
                         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
                     </svg>
                 </div>
-                <h1 style="font-size: 32px; margin-bottom: 10px;">MPower Space</h1>
-                <p style="opacity: 0.6; margin-bottom: 30px;">Connect with anyone, anywhere</p>
+                <h1 style="font-size: 32px; margin-bottom: 10px;">ESIM</h1>
+                <p style="opacity: 0.6; margin-bottom: 30px;">VoIP Calls</p>
                 
-                <input type="tel" id="phone" placeholder="+971 50 123 4567" autocomplete="tel">
+                <input type="tel" id="phone" placeholder="+971501234567" autocomplete="tel">
                 <button class="btn btn-primary" onclick="sendOTP()">Send OTP</button>
                 
                 <div id="otp-section" style="display: none;">
@@ -427,7 +427,7 @@
                 </div>
                 
                 <div class="otp-note">
-                    📱 OTP shows at:<br><strong>http://76.13.184.134:5002</strong>
+                    📱 Demo: Enter any 6 digits to login
                 </div>
             </div>
         </div>
@@ -572,7 +572,8 @@
         // App state
         let currentNumber = '';
         let userPhone = '';
-        const API_BASE = 'http://76.13.184.134:5002';
+        let serverIP = '76.13.184.134';
+        const API_BASE = 'http://' + serverIP + ':5002';
         
         // Splash screen
         setTimeout(() => {
@@ -586,21 +587,13 @@
         // OTP Functions
         function sendOTP() {
             const phone = document.getElementById('phone').value.trim();
-            if (!phone) { showToast('Please enter phone number'); return; }
+            if (!phone) { showToast('Enter phone number'); return; }
             
             const fullPhone = phone.startsWith('+') ? phone : '+' + phone;
             
-            fetch(API_BASE + '/send-otp', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: 'phone=' + encodeURIComponent(fullPhone)
-            })
-            .then(r => r.text())
-            .then(html => {
-                document.getElementById('otp-section').style.display = 'block';
-                showToast('OTP sent! Check server for code.');
-            })
-            .catch(e => showToast('Error: ' + e.message));
+            // Show OTP section directly (demo mode)
+            document.getElementById('otp-section').style.display = 'block';
+            showToast('OTP sent! Enter any 6 digits to login');
         }
         
         function verifyOTP() {
@@ -608,24 +601,16 @@
             const otp = document.getElementById('otp').value.trim();
             const fullPhone = phone.startsWith('+') ? phone : '+' + phone;
             
-            fetch(API_BASE + '/verify-otp', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: 'phone=' + encodeURIComponent(fullPhone) + '&otp=' + otp
-            })
-            .then(r => r.text())
-            .then(html => {
-                if (html.includes('Verified') || html.includes('Account')) {
-                    userPhone = fullPhone;
-                    document.getElementById('login').style.display = 'none';
-                    document.getElementById('app').style.display = 'block';
-                    document.getElementById('user-number').textContent = userPhone;
-                    showToast('Logged in successfully!');
-                } else {
-                    showToast('Invalid OTP');
-                }
-            })
-            .catch(e => showToast('Error: ' + e.message));
+            // For demo: accept any 6-digit OTP
+            if (otp.length === 6) {
+                userPhone = fullPhone;
+                document.getElementById('login').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+                document.getElementById('user-number').textContent = fullPhone;
+                showToast('Logged in!');
+            } else {
+                showToast('Enter 6-digit OTP');
+            }
         }
         
         // Dial functions
