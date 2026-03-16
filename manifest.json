@@ -1,12 +1,14 @@
 {
-  "name": "ESIM - VoIP Calls",
+  "name": "ESIM VoIP",
   "short_name": "ESIM",
-  "description": "VoIP Calling App - Connect with anyone, anywhere",
-  "start_url": "/",
+  "description": "ESIM VoIP Calling App",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0F0F23",
   "theme_color": "#FF6B35",
   "orientation": "portrait",
+  "scope": "./",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23FF6B35' width='192' height='192' rx='40'/><path fill='white' d='M150 120c-8 0-15-2-22-6-20-12-38-30-50-50-4-7-6-14-6-22s2-15 6-22c12-20 30-38 50-50 7-4 14-6 22-6s15 2 22 6c20 12 38 30 50 50 4 7 6 14 6 22s-2 15-6 22c-12 20-30 38-50 50-7 4-14 6-22 6zm-68 0a70 70 0 0 1 0-140 70 70 0 0 1 0 140zm0 20a10 10 0 1 0 0-20 10 10 0 0 0 0 20zm30-50a10 10 0 1 0 0-20 10 10 0 0 0 0 20z'/></svg>",

@@ -1,9 +1,10 @@
 // MPower Space Service Worker
-const CACHE_NAME = 'mpower-space-v1';
+const CACHE_NAME = 'esim-v1';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json'
+  './',
+  './index.html',
+  './manifest.json',
+  './sw.js'
 ];
 
 self.addEventListener('install', event => {
